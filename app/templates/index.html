@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Inicio · Control de Combustible{% endblock %}
+{% block content %}
+<section class="stats" id="stats">
+  <div class="card stat"><span class="num" id="stat-personas">{{ stats.total_personas }}</span><span class="lbl">Carnets registrados</span></div>
+  <div class="card stat"><span class="num" id="stat-compras">{{ stats.total_compras }}</span><span class="lbl">Compras totales</span></div>
+  <div class="card stat"><span class="num" id="stat-hoy">{{ stats.compras_hoy }}</span><span class="lbl">Compras hoy</span></div>
+  <div class="card stat"><span class="num" id="stat-litros">{{ "%.1f"|format(stats.litros_hoy) }}</span><span class="lbl">Litros hoy</span></div>
+</section>
+
+<section class="grid-2">
+  <div class="card">
+    <h2>Verificar carnet</h2>
+    <p class="muted">Comprueba si un carnet puede cargar combustible ahora.</p>
+    <form id="form-estado" class="row">
+      <input type="text" id="estado-carnet" placeholder="Número de carnet" required />
+      <button type="submit">Consultar</button>
+    </form>
+    <div id="estado-resultado" class="result" hidden></div>
+  </div>
+
+  <div class="card">
+    <h2>Registrar compra</h2>
+    <p class="muted">Valida la regla de una compra cada {{ cooldown_dias }} día(s).</p>
+    <form id="form-compra">
+      <label>Carnet
+        <input type="text" id="compra-carnet" placeholder="Número de carnet" required />
+      </label>
+      <label>Litros (máx. {{ max_litros }})
+        <input type="number" id="compra-litros" min="0" max="{{ max_litros }}" step="0.1" value="20" />
+      </label>
+      <button type="submit">Registrar compra</button>
+    </form>
+    <div id="compra-resultado" class="result" hidden></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.getElementById("form-estado").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const carnet = document.getElementById("estado-carnet").value.trim();
+    const box = document.getElementById("estado-resultado");
+    try {
+      const data = await api(`/api/personas/${encodeURIComponent(carnet)}/estado`);
+      box.hidden = false;
+      box.className = "result " + (data.puede_comprar ? "ok" : "err");
+      box.innerHTML = `<strong>${data.puede_comprar ? "HABILITADO" : "BLOQUEADO"}</strong><br>${data.motivo}`
+        + (data.nombre ? `<br>Titular: ${data.nombre}` : "");
+    } catch (err) { showError(box, err); }
+  });
+
+  document.getElementById("form-compra").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const carnet = document.getElementById("compra-carnet").value.trim();
+    const litros = parseFloat(document.getElementById("compra-litros").value || "0");
+    const box = document.getElementById("compra-resultado");
+    try {
+      const data = await api("/api/compras", "POST", { carnet, litros });
+      box.hidden = false;
+      box.className = "result ok";
+      box.innerHTML = `<strong>Compra registrada</strong><br>Carnet ${data.carnet} · ${data.litros} L<br>${new Date(data.fecha).toLocaleString()}`;
+      refreshStats();
+      document.getElementById("form-compra").reset();
+      document.getElementById("compra-litros").value = 20;
+    } catch (err) { showError(box, err); }
+  });
+
+  async function refreshStats() {
+    try {
+      const s = await api("/api/estadisticas");
+      document.getElementById("stat-personas").textContent = s.total_personas;
+      document.getElementById("stat-compras").textContent = s.total_compras;
+      document.getElementById("stat-hoy").textContent = s.compras_hoy;
+      document.getElementById("stat-litros").textContent = s.litros_hoy.toFixed(1);
+    } catch (_) {}
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Historial · Control de Combustible{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Historial de compras</h2>
+  <form id="form-filtro" class="row wrap">
+    <label>Carnet <input type="text" id="f-carnet" placeholder="Todos" /></label>
+    <label>Desde <input type="date" id="f-desde" /></label>
+    <label>Hasta <input type="date" id="f-hasta" /></label>
+    <button type="submit">Filtrar</button>
+  </form>
+  <table id="tabla-compras">
+    <thead><tr><th>Fecha</th><th>Carnet</th><th>Litros</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const tbody = document.querySelector("#tabla-compras tbody");
+
+  async function cargar() {
+    const carnet = document.getElementById("f-carnet").value.trim();
+    const desde = document.getElementById("f-desde").value;
+    const hasta = document.getElementById("f-hasta").value;
+    const params = new URLSearchParams();
+    if (carnet) params.set("carnet", carnet);
+    if (desde) params.set("desde", desde + "T00:00:00");
+    if (hasta) params.set("hasta", hasta + "T23:59:59");
+    const data = await api("/api/compras?" + params.toString());
+    tbody.innerHTML = data.map(c =>
+      `<tr><td>${new Date(c.fecha).toLocaleString()}</td><td>${c.carnet}</td><td>${c.litros}</td></tr>`
+    ).join("") || `<tr><td colspan="3" class="muted">Sin compras</td></tr>`;
+  }
+
+  document.getElementById("form-filtro").addEventListener("submit", (e) => {
+    e.preventDefault(); cargar();
+  });
+  cargar();
+</script>
+{% endblock %}
