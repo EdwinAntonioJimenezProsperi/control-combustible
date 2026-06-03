@@ -102,12 +102,18 @@ cadena de conexión.
 
 ## Despliegue en Render (gratis)
 
-1. Sube este repositorio a GitHub.
+Este `render.yaml` usa un **Postgres externo** (Neon/Supabase) para que los datos
+no caduquen a los 90 días.
+
+1. Crea un Postgres gratis en [Neon](https://neon.tech) o
+   [Supabase](https://supabase.com) y copia su cadena de conexión (`DATABASE_URL`).
 2. En [Render](https://dashboard.render.com) → **New** → **Blueprint** y
    selecciona el repo (Render detecta `render.yaml`).
-3. Render crea el servicio web **y** una base de datos Postgres gratuita,
-   inyectando `DATABASE_URL` automáticamente.
+3. Render te pedirá el valor de **`DATABASE_URL`** (está como `sync: false`):
+   pega ahí la cadena de tu Postgres externo.
 4. Al terminar el deploy tendrás una URL pública `https://<tu-app>.onrender.com`.
 
 > Nota: el plan gratuito de Render suspende el servicio tras inactividad; la
-> primera petición después de dormir puede tardar unos segundos.
+> primera petición después de dormir puede tardar unos segundos. Los datos viven
+> en tu Postgres externo, así que **persisten** aunque el servicio se duerma o
+> se redepliegue.
