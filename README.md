@@ -82,6 +82,24 @@ ruff check .
 | GET    | `/api/estadisticas`               | Totales y compras del día              |
 | GET    | `/health`                         | Healthcheck                            |
 
+## Persistencia de datos
+
+Los datos se guardan en la **base de datos del servidor**, no en el navegador:
+**refrescar la página nunca borra nada**.
+
+| Base de datos | ¿Persiste? | Cuándo usarla |
+|---------------|-----------|----------------|
+| **PostgreSQL** (Render free, Neon, Supabase…) | ✅ Sí, sobrevive a reinicios, “dormidas” y nuevos despliegues | **Producción / Render** |
+| **SQLite** (archivo local) | Sólo en local. ❌ En Render free el disco es efímero y se borra al redeplegar | Sólo desarrollo local |
+
+El `render.yaml` ya provisiona **Postgres** y conecta la app vía `DATABASE_URL`,
+por lo que en Render **los datos persisten**. Para usar otro Postgres gratuito
+(p. ej. Neon/Supabase, sin caducidad), define la variable `DATABASE_URL` con su
+cadena de conexión.
+
+> Verificado: registrando un carnet + compra contra Postgres y **reiniciando el
+> servidor**, los datos y la regla de espera se mantienen intactos.
+
 ## Despliegue en Render (gratis)
 
 1. Sube este repositorio a GitHub.
