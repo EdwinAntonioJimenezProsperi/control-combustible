@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Registrar carnets · Control de Combustible{% endblock %}
+{% block content %}
+<section class="grid-2">
+  <div class="card">
+    <h2>Registrar carnet</h2>
+    <form id="form-persona">
+      <label>Número de carnet
+        <input type="text" id="persona-carnet" placeholder="Ej. 0801-1990-12345" required />
+      </label>
+      <label>Nombre (opcional)
+        <input type="text" id="persona-nombre" placeholder="Nombre del titular" />
+      </label>
+      <button type="submit">Registrar</button>
+    </form>
+    <div id="persona-resultado" class="result" hidden></div>
+  </div>
+
+  <div class="card">
+    <h2>Buscar carnet</h2>
+    <form id="form-buscar" class="row">
+      <input type="text" id="buscar-q" placeholder="Carnet o nombre" />
+      <button type="submit">Buscar</button>
+    </form>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Carnets registrados</h2>
+  <div class="table-wrap">
+    <table id="tabla-personas">
+      <thead><tr><th>Carnet</th><th>Nombre</th><th>Registrado</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const tbody = document.querySelector("#tabla-personas tbody");
+
+  async function cargarPersonas(q = "") {
+    const url = q ? `/api/personas?q=${encodeURIComponent(q)}` : "/api/personas";
+    const data = await api(url);
+    tbody.innerHTML = data.map(p =>
+      `<tr><td>${p.carnet}</td><td>${p.nombre || "—"}</td><td>${new Date(p.creado_en).toLocaleString()}</td></tr>`
+    ).join("") || `<tr><td colspan="3" class="muted">Sin resultados</td></tr>`;
+  }
+
+  document.getElementById("form-persona").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const carnet = document.getElementById("persona-carnet").value.trim();
+    const nombre = document.getElementById("persona-nombre").value.trim();
+    const box = document.getElementById("persona-resultado");
+    try {
+      const data = await api("/api/personas", "POST", { carnet, nombre });
+      box.hidden = false; box.className = "result ok";
+      box.innerHTML = `<strong>Carnet registrado:</strong> ${data.carnet}`;
+      document.getElementById("form-persona").reset();
+      cargarPersonas();
+    } catch (err) { showError(box, err); }
+  });
+
+  document.getElementById("form-buscar").addEventListener("submit", (e) => {
+    e.preventDefault();
+    cargarPersonas(document.getElementById("buscar-q").value.trim());
+  });
+
+  cargarPersonas();
+</script>
+{% endblock %}

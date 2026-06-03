@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Control de Combustible{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">⛽ Control de Combustible</div>
+    <nav>
+      <a href="/">Inicio</a>
+      <a href="/personas">Registrar carnets</a>
+      <a href="/historial">Historial</a>
+    </nav>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="footer">
+    Una compra por carnet cada <strong>{{ cooldown_dias if cooldown_dias is defined else '—' }}</strong>
+    día(s). Búsqueda por índice único (rápida para 10.000+ habitantes).
+  </footer>
+  <script src="/static/app.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

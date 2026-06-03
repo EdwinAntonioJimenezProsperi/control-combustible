@@ -1,0 +1,22 @@
+# Configuración para desplegar en Render (https://render.com).
+# Usa un Postgres EXTERNO (Neon/Supabase): pega su cadena de conexión en la
+# variable DATABASE_URL al desplegar (Render la pedirá porque tiene sync: false).
+services:
+  - type: web
+    name: control-combustible
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: COOLDOWN_DAYS
+        value: "7"
+      - key: MAX_LITROS
+        value: "100"
+      # Cadena de conexión de tu Postgres externo (Neon/Supabase).
+      # Se introduce manualmente en el panel de Render (no se versiona).
+      - key: DATABASE_URL
+        sync: false
