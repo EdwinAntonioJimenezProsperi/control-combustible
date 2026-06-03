@@ -1,10 +1,14 @@
 # ⛽ Sistema de Control de Compra de Combustible
 
-Sistema web para controlar la compra de combustible en una población (10.000+
-habitantes). Cada persona se identifica por su **número de carnet** y solo puede
-cargar combustible **una vez por ventana de tiempo** (por defecto **1 vez por
-semana**, configurable). Lleva el **historial de compras por fechas** y permite
-verificar **de forma rápida** si un carnet ya cargó.
+Sistema web para controlar la compra de combustible en una población (pensado
+para 10.000+ habitantes). Cada persona se identifica por su **número de carnet**
+y solo puede cargar combustible **una vez por ventana de tiempo** (por defecto
+**1 vez por semana**, configurable). Lleva el **historial de compras por fechas**
+y permite verificar **de forma rápida** si un carnet ya cargó.
+
+> La base de datos arranca **vacía**: los carnets se van registrando manualmente
+> (el contador de carnets solo aumenta cuando registras cada uno). No hay datos
+> precargados ni ficticios. La interfaz es **responsiva** (móvil, tablet y PC).
 
 ## Características
 
@@ -16,7 +20,7 @@ verificar **de forma rápida** si un carnet ya cargó.
   columna `carnet` (índice B-tree → búsqueda O(log n)). Para 10.000 habitantes
   la consulta es prácticamente instantánea.
 - **Historial de compras por fechas**, con filtros por carnet y rango de fechas.
-- **Interfaz web** simple + **API JSON**.
+- **Interfaz web responsiva** (móvil, tablet, escritorio) + **API JSON**.
 - Listo para desplegar en **Render** (free tier) con Postgres.
 
 ## Reglas de negocio
@@ -38,7 +42,6 @@ app/
   main.py        # FastAPI: API JSON + páginas web
   templates/     # interfaz web (Jinja2)
   static/        # CSS y JS
-seed.py          # genera N carnets de prueba (por defecto 10.000)
 tests/           # pruebas con pytest
 render.yaml      # despliegue en Render
 ```
@@ -58,12 +61,6 @@ Variables opcionales:
 export COOLDOWN_DAYS=7          # 1 = una vez al día, 7 = una vez por semana
 export MAX_LITROS=100
 export DATABASE_URL=sqlite:///./combustible.db   # o una URL de Postgres
-```
-
-Generar 10.000 habitantes de prueba:
-
-```bash
-python seed.py        # o: python seed.py 5000
 ```
 
 ## Pruebas y lint
